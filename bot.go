@@ -9,6 +9,7 @@ import (
 )
 
 func main() {
+
 	BOT_TOKEN, exsits := os.LookupEnv("BOT_TOKEN")
 	if exsits == false {
 		fmt.Println("bot token not present")
