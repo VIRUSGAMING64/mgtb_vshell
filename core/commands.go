@@ -37,7 +37,9 @@ func ls(bot *tgbot.BotAPI, msg *tgbot.Message) error {
 	return err
 }
 
+// TODO
 func mkdir(bot *tgbot.BotAPI, msg *tgbot.Message) error {
+
 	return nil
 }
 

@@ -36,7 +36,9 @@ func Compress(vid string, fn Callback) error {
 			}
 			s1, _ := f1.Stat()
 			s2, _ := f2.Stat()
-			fn(s2.Size(), s1.Size())
+			if fn != nil {
+				fn(s2.Size(), s1.Size())
+			}
 		}
 	}()
 	err = ff.Run()
