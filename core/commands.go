@@ -2,6 +2,7 @@ package core
 
 import (
 	"govshell/core/emoji"
+	"govshell/core/ffmpeg"
 
 	tgbot "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
@@ -37,10 +38,16 @@ func ls(bot *tgbot.BotAPI, msg *tgbot.Message) error {
 	return err
 }
 
-// TODO
 func mkdir(bot *tgbot.BotAPI, msg *tgbot.Message) error {
-
-	return nil
+	usr := GetUserFromMsg(msg)
+	folder := msg.CommandArguments()
+	err := usr.Mkdir(folder)
+	if err != nil {
+		return err
+	}
+	res := tgbot.NewMessage(msg.Chat.ID, "Directory: "+folder+" created...")
+	_, err = bot.Send(res)
+	return err
 }
 
 // TODO
@@ -50,5 +57,28 @@ func x265(bot *tgbot.BotAPI, msg *tgbot.Message) error {
 
 // TODO
 func upload(bot *tgbot.BotAPI, msg *tgbot.Message) error {
+	return nil
+}
+
+func zips(bot *tgbot.BotAPI, msg *tgbot.Message) error {
+	usr := GetUserFromMsg(msg)
+	arg := msg.CommandArguments()
+	idx := ffmpeg.String2Int64(arg)
+	dir, e1 := GetFromIndex(idx, usr)
+	di2, e2 := GetFromName(arg, usr)
+	if dir == nil {
+		dir = di2
+		e1 = e2
+	}
+
+	if e1 != nil {
+		return e1
+	}
+
+	//f, _ := os.Open("tmp")
+	//zfile := zip.NewWriter(f)
+
+	//TODO Aqui tengo que hacerle zip a ese directory
+
 	return nil
 }

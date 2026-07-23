@@ -14,6 +14,9 @@ func String2Int64(data string) int64 {
 	d := int64(0)
 	c := int64(1)
 	for i := len(data) - 1; i >= 0; i-- {
+		if -1 == StringIsIn(data[i], "0123456789") {
+			return -1
+		}
 		d = d + int64(data[i]-'0')*c
 		c = c * 10
 	}
@@ -40,8 +43,8 @@ func IsIn(elem string, arr []string) int {
 func StringIsIn(elem byte, arr string) int {
 	for i := 0; i < len(arr); i++ {
 		if elem == arr[i] {
-			return i + 1
+			return i
 		}
 	}
-	return 0
+	return -1
 }
