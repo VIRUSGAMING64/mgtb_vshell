@@ -2,7 +2,9 @@ package core
 
 import (
 	"errors"
+	"net/url"
 	"os"
+	"strings"
 
 	tgbot "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
@@ -33,4 +35,19 @@ func GetFromName(arg string, usr *User) (os.DirEntry, error) {
 		}
 	}
 	return nil, errors.New("Not found entry")
+}
+
+func UriEncode2String(s string) string {
+	s = strings.ReplaceAll(s, "%20", " ")
+	s = strings.ReplaceAll(s, "%28", "(")
+	s = strings.ReplaceAll(s, "%29", ")")
+	return s
+}
+
+func GetNameFromUrl(uri url.URL) string {
+	pths := strings.Split(uri.Path, "/")
+	if len(pths) == 0 {
+		return ""
+	}
+	return UriEncode2String(pths[len(pths)-1])
 }

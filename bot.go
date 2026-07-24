@@ -19,6 +19,8 @@ func main() {
 		fmt.Println(err)
 		return
 	}
+	fmt.Println("Bot started")
+	go core.CompressingWorker()
 	os.MkdirAll("users", 0644)
 	os.MkdirAll("roots", 0644)
 	updatesConf := tgbot.NewUpdate(0)

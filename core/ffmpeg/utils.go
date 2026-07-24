@@ -24,6 +24,9 @@ func String2Int64(data string) int64 {
 }
 
 func Int64toString(c int64) string {
+	if c == 0 {
+		return "0"
+	}
 	a := string("")
 	for x := c; x != 0; x = x / 10 {
 		a = string(byte(x%10)+'0') + a

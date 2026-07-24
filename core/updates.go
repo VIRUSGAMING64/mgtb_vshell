@@ -1,6 +1,7 @@
 package core
 
 import (
+	"fmt"
 	"sync"
 
 	tgbot "github.com/go-telegram-bot-api/telegram-bot-api/v5"
@@ -21,18 +22,24 @@ func updateUsers(msg *tgbot.Message) {
 
 func OnCommand(bot *tgbot.BotAPI, msg *tgbot.Message) error {
 	cmd := msg.Command()
-	out := ""
+	var err error = nil
 	switch cmd {
+	case "zip":
+		err = zips(bot, msg)
 	case "x265":
-		x265(bot, msg)
+		comp_queue = append(comp_queue, bot)
+		msg_queue = append(msg_queue, msg)
+
 	case "ls":
-		ls(bot, msg)
+		err = ls(bot, msg)
 	case "mkdir":
-		mkdir(bot, msg)
+		err = mkdir(bot, msg)
 	case "upload":
-		upload(bot, msg)
+		err = upload(bot, msg)
+
 	}
-	bot.Send(tgbot.NewMessage(msg.Chat.ID, out))
+	fmt.Println(err)
+
 	return nil
 }
 

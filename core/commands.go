@@ -1,8 +1,12 @@
 package core
 
 import (
+	"archive/zip"
+	"fmt"
 	"govshell/core/emoji"
 	"govshell/core/ffmpeg"
+	"os"
+	"path"
 
 	tgbot "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
@@ -50,9 +54,58 @@ func mkdir(bot *tgbot.BotAPI, msg *tgbot.Message) error {
 	return err
 }
 
-// TODO
+func rm(bot *tgbot.BotAPI, msg *tgbot.Message) error {
+	usr := GetUserFromMsg(msg)
+	arg := msg.CommandArguments()
+	idx := ffmpeg.String2Int64(arg)
+	dir, e1 := GetFromIndex(idx, usr)
+	di2, e2 := GetFromName(arg, usr)
+	if dir == nil {
+		dir = di2
+		e1 = e2
+	}
+	if e1 != nil {
+		return e1
+	}
+	err := usr.Rm(dir.Name())
+	if err != nil {
+		return err
+	}
+	res := tgbot.NewMessage(msg.Chat.ID, "Removed: "+dir.Name())
+	_, e := bot.Send(res)
+	return e
+}
+
 func x265(bot *tgbot.BotAPI, msg *tgbot.Message) error {
-	return nil
+	usr := GetUserFromMsg(msg)
+	arg := msg.CommandArguments()
+	idx := ffmpeg.String2Int64(arg)
+	dir, e1 := GetFromIndex(idx, usr)
+	di2, e2 := GetFromName(arg, usr)
+	if dir == nil {
+		dir = di2
+		e1 = e2
+	}
+
+	if e1 != nil {
+		return e1
+	}
+	pth := path.Join(usr.Path, dir.Name())
+	m, e := bot.Send(tgbot.NewMessage(msg.Chat.ID, "Compressing..."))
+	if e != nil {
+		return e
+	}
+	err := ffmpeg.Compress(pth, false, func(part, total int64) {
+		fmt.Println(total, part)
+		text := ffmpeg.Int64toString(int64(part/total*100)) + "%"
+		if text == m.Text {
+			return
+		}
+		conf := tgbot.NewEditMessageText(m.Chat.ID, m.MessageID, text)
+		m, e = bot.Send(conf)
+		fmt.Println(e)
+	})
+	return err
 }
 
 // TODO
@@ -75,10 +128,20 @@ func zips(bot *tgbot.BotAPI, msg *tgbot.Message) error {
 		return e1
 	}
 
-	//f, _ := os.Open("tmp")
-	//zfile := zip.NewWriter(f)
+	fs := os.DirFS(path.Join(usr.Path, dir.Name()))
+	f, e := os.OpenFile(dir.Name()+".zip", os.O_CREATE|os.O_RDWR, 0644)
+	if e != nil {
+		return e
+	}
+	defer f.Close()
 
-	//TODO Aqui tengo que hacerle zip a ese directory
+	res := tgbot.NewMessage(msg.Chat.ID, "Compressing")
+	bot.Send(res)
+	zfile := zip.NewWriter(f)
+	defer zfile.Close()
 
+	zfile.AddFS(fs)
+	res = tgbot.NewMessage(msg.Chat.ID, "Compressed")
+	bot.Send(res)
 	return nil
 }

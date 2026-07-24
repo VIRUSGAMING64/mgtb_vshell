@@ -1,0 +1,4 @@
+package compress
+
+func Add() {
+}

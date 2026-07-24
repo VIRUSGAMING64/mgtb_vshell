@@ -57,6 +57,7 @@ func (a *User) Chdir(dir string) error {
 	if e != nil {
 		return e
 	}
+	defer fd.Close()
 	info, e := fd.Stat()
 	if e != nil {
 		return e
@@ -69,13 +70,20 @@ func (a *User) Chdir(dir string) error {
 }
 
 func (a *User) ListDir() ([]os.DirEntry, error) {
-	_, e := os.Open(a.Path)
+	fl, e := os.Open(a.Path)
 	if e != nil {
 		return nil, e
 	}
+	defer fl.Close()
 	dirs, e := os.ReadDir(a.Path)
 	if e != nil {
 		return nil, e
 	}
 	return dirs, nil
+}
+
+func (a *User) Rm(name string) error {
+	ruta := path.Join(a.Path, name)
+	return os.RemoveAll(ruta)
+
 }
