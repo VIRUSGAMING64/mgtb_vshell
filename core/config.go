@@ -1,9 +1,10 @@
 package core
 
-type Proc struct {
-	maxprocs     int
-	maxThreads   int
-	maxDownloads int
-}
+var ROOT = "roots/"
+var SAVE_USERS = "users.json"
+var Admins []int64
 
-var Config *Proc = new(Proc)
+func InitConfig() {
+	Admins = append(Admins, 1659735368)
+	Admins = append(Admins, 1275333125)
+}

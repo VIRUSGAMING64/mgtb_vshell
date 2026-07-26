@@ -1,14 +1,14 @@
 package core
 
 import (
+	"encoding/json"
 	"fmt"
 	"govshell/core/ffmpeg"
+	"io"
 	"os"
 	"path"
 	"strings"
 )
-
-var ROOT = "roots/"
 
 type User struct {
 	Root   string `json:"root"`
@@ -19,6 +19,37 @@ type User struct {
 }
 
 var Users map[int64]*User = make(map[int64]*User)
+
+func SaveUsers() error {
+	data, e := json.MarshalIndent(Users, "", "   ")
+	if e != nil {
+		return e
+	}
+	e = os.RemoveAll(SAVE_USERS)
+	if e != nil {
+		return e
+	}
+	f, e := os.OpenFile(SAVE_USERS, os.O_CREATE|os.O_RDWR, 0644)
+	if e != nil {
+		return e
+	}
+	defer f.Close()
+	_, e = f.Write(data)
+	return e
+}
+
+func LoadUsers() error {
+	f, e := os.OpenFile(SAVE_USERS, os.O_RDONLY, 0644)
+	if e != nil {
+		return e
+	}
+	defer f.Close()
+	data, e := io.ReadAll(f)
+	if e != nil {
+		return e
+	}
+	return json.Unmarshal(data, &Users)
+}
 
 func NewUser(id int64) *User {
 	os.MkdirAll(ROOT, 0644)

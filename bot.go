@@ -9,6 +9,7 @@ import (
 )
 
 func main() {
+	core.InitConfig()
 	BOT_TOKEN, exsits := os.LookupEnv("BOT_TOKEN")
 	if exsits == false {
 		fmt.Println("bot token not present")
@@ -20,8 +21,9 @@ func main() {
 		return
 	}
 	fmt.Println("Bot started")
+	core.LoadUsers()
+	go core.SaveWorker()
 	go core.CompressingWorker()
-	os.MkdirAll("users", 0644)
 	os.MkdirAll("roots", 0644)
 	updatesConf := tgbot.NewUpdate(0)
 	updatesConf.Timeout = 60

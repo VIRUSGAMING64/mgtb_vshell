@@ -1,6 +1,7 @@
 package core
 
 import (
+	"sync"
 	"time"
 
 	tgbot "github.com/go-telegram-bot-api/telegram-bot-api/v5"
@@ -23,5 +24,19 @@ func CompressingWorker() {
 		}
 		comp_queue = comp_queue[1:]
 		msg_queue = msg_queue[1:]
+	}
+}
+
+var saveMTX = sync.Mutex{}
+
+func SaveWorker() {
+	for {
+		time.Sleep(1 * time.Minute)
+		saveMTX.Lock()
+		e := SaveUsers()
+		if e != nil {
+			panic(e)
+		}
+		saveMTX.Unlock()
 	}
 }

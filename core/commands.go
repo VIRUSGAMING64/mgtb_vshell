@@ -97,7 +97,7 @@ func x265(bot *tgbot.BotAPI, msg *tgbot.Message) error {
 	}
 	err := ffmpeg.Compress(pth, false, func(part, total int64) {
 		fmt.Println(total, part)
-		text := ffmpeg.Int64toString(int64(part/total*100)) + "%"
+		text := fmt.Sprintf("%.2f%%", float64(part)/float64(total)*100)
 		if text == m.Text {
 			return
 		}

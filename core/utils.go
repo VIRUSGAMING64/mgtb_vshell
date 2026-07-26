@@ -51,3 +51,42 @@ func GetNameFromUrl(uri url.URL) string {
 	}
 	return UriEncode2String(pths[len(pths)-1])
 }
+
+func JoinFiles(pth string, names []string) error {
+	e := os.RemoveAll(pth)
+	if e != nil {
+		return e
+	}
+	writer, err := os.OpenFile(pth, os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		return err
+	}
+	defer writer.Close()
+	for _, name := range names {
+		f, e := os.OpenFile(name, os.O_RDONLY, 0644)
+		if e != nil {
+			return e
+		}
+		defer f.Close()
+		for {
+			var buff []byte = make([]byte, 512*1024)
+			cnt, e := f.Read(buff)
+			buff = buff[:cnt]
+			if e != nil {
+				if e.Error() == "EOF" {
+					break
+				}
+				return e
+			}
+			_, e = writer.Write(buff)
+			if e != nil {
+				return e
+			}
+		}
+		e = os.RemoveAll(name)
+		if e != nil {
+			return e
+		}
+	}
+	return nil
+}

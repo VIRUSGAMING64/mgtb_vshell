@@ -40,7 +40,7 @@ func Compress(vid string, power bool, fn Callback) error {
 			f2, e2 := os.OpenFile(out, os.O_RDONLY, 0644)
 			defer f1.Close()
 			defer f2.Close()
-			if e1 != nil || e2 != nil {
+			if e1 != nil || e2 != nil || err != nil {
 				return
 			}
 			s1, _ := f1.Stat()
