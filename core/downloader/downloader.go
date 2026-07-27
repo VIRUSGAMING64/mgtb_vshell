@@ -2,7 +2,7 @@ package downloader
 
 import (
 	"errors"
-	"govshell/core"
+	"fmt"
 	"govshell/core/ffmpeg"
 	"net/http"
 	"net/url"
@@ -47,9 +47,10 @@ func NewDownloader(uri string) *Downloader {
 	dl := Downloader{Url: uri, threads: 8}
 	ur, e := url.Parse(uri)
 	if e != nil {
+		fmt.Println(e)
 		panic(e)
 	}
-	dl.Filename = core.GetNameFromUrl(*ur)
+	dl.Filename = GetNameFromUrl(*ur)
 	return &dl
 }
 
@@ -75,11 +76,11 @@ func ParallelWorker(a *Downloader, file, url string, l, r int64) error {
 	}
 	defer writer.Close()
 	i := l
-	sz := 0
+	sz := int64(0)
 
 	for ; i+chunk_size <= r; i += chunk_size {
 		data, err := DlWoker(url, i, i+chunk_size-1)
-		sz += len(data)
+		sz += int64(len(data))
 		if err != nil {
 			return err
 		}
@@ -89,7 +90,7 @@ func ParallelWorker(a *Downloader, file, url string, l, r int64) error {
 		}
 	}
 	data, err := DlWoker(url, i, r)
-	sz += len(data)
+	sz += int64(len(data))
 	if err != nil {
 		return err
 	}
@@ -133,5 +134,5 @@ func (a *Downloader) StartParallel() error {
 		}
 		dlmutex.Unlock()
 	}
-	return core.JoinFiles(a.Filename, names)
+	return JoinFiles(a.Filename, names)
 }

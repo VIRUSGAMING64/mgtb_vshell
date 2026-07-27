@@ -16,8 +16,8 @@ func updateUsers(msg *tgbot.Message) {
 	usr := msg.From.UserName
 	if Users[(usrid)] == nil {
 		Users[(usrid)] = NewUser((usrid))
-		Users[(usrid)].Name = usr
 	}
+	Users[(usrid)].Name = usr
 }
 
 func OnCommand(bot *tgbot.BotAPI, msg *tgbot.Message) error {
@@ -32,14 +32,22 @@ func OnCommand(bot *tgbot.BotAPI, msg *tgbot.Message) error {
 
 	case "ls":
 		err = ls(bot, msg)
+	case "cd":
+		err = cd(bot, msg)
 	case "mkdir":
 		err = mkdir(bot, msg)
 	case "upload":
 		err = upload(bot, msg)
-
+	case "rm":
+		err = rm(bot, msg)
+	case "downl":
+		err = donwl(bot, msg)
+	default:
+		fmt.Println("unknow command:", cmd)
 	}
-	fmt.Println(err)
-
+	if err != nil {
+		fmt.Println(err.Error())
+	}
 	return nil
 }
 
@@ -49,9 +57,16 @@ func OnInlineQuery(bot *tgbot.BotAPI, q *tgbot.InlineQuery) error {
 
 func OnMessage(bot *tgbot.BotAPI, msg *tgbot.Message) error {
 	updateUsers(msg)
+
+	adm := Users[msg.From.ID]
+	if adm.Status&BAN != 0 {
+		fmt.Println("user banned: ", adm.Id)
+		return nil
+	}
 	if msg.IsCommand() {
 		return OnCommand(bot, msg)
 	}
+	fmt.Println("Normal message:", msg.Text)
 	return nil
 }
 
@@ -62,5 +77,6 @@ func OnUpdate(bot *tgbot.BotAPI, up tgbot.Update) error {
 	if up.InlineQuery != nil {
 		return OnInlineQuery(bot, up.InlineQuery)
 	}
+	fmt.Println("Unknow update")
 	return nil
 }

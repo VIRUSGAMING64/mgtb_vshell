@@ -3,13 +3,26 @@ package core
 import (
 	"archive/zip"
 	"fmt"
+	"govshell/core/downloader"
 	"govshell/core/emoji"
 	"govshell/core/ffmpeg"
+	"net/http"
 	"os"
 	"path"
+	"time"
 
 	tgbot "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
+
+func Response(text string, bot *tgbot.BotAPI, msg *tgbot.Message) error {
+	if bot != nil {
+		res := tgbot.NewMessage(msg.Chat.ID, text)
+		_, err := bot.Send(res)
+		return err
+	}
+	fmt.Println(text)
+	return nil
+}
 
 func ls(bot *tgbot.BotAPI, msg *tgbot.Message) error {
 	usr := GetUserFromMsg(msg)
@@ -37,8 +50,7 @@ func ls(bot *tgbot.BotAPI, msg *tgbot.Message) error {
 	for _, a := range fils {
 		text += a + "\n"
 	}
-	res := tgbot.NewMessage(msg.Chat.ID, text)
-	_, err = bot.Send(res)
+	err = Response(text, bot, msg)
 	return err
 }
 
@@ -49,9 +61,20 @@ func mkdir(bot *tgbot.BotAPI, msg *tgbot.Message) error {
 	if err != nil {
 		return err
 	}
-	res := tgbot.NewMessage(msg.Chat.ID, "Directory: "+folder+" created...")
-	_, err = bot.Send(res)
+	text := "Directory: " + folder + " created..."
+	err = Response(text, bot, msg)
 	return err
+}
+
+func cd(bot *tgbot.BotAPI, msg *tgbot.Message) error {
+	usr := GetUserFromMsg(msg)
+	arg := msg.CommandArguments()
+	err := usr.Chdir(arg)
+	if err != nil {
+		return err
+	}
+	text := "Directory changed to: " + arg
+	return Response(text, bot, msg)
 }
 
 func rm(bot *tgbot.BotAPI, msg *tgbot.Message) error {
@@ -71,9 +94,8 @@ func rm(bot *tgbot.BotAPI, msg *tgbot.Message) error {
 	if err != nil {
 		return err
 	}
-	res := tgbot.NewMessage(msg.Chat.ID, "Removed: "+dir.Name())
-	_, e := bot.Send(res)
-	return e
+	text := "Removed: " + dir.Name()
+	return Response(text, bot, msg)
 }
 
 func x265(bot *tgbot.BotAPI, msg *tgbot.Message) error {
@@ -91,19 +113,33 @@ func x265(bot *tgbot.BotAPI, msg *tgbot.Message) error {
 		return e1
 	}
 	pth := path.Join(usr.Path, dir.Name())
-	m, e := bot.Send(tgbot.NewMessage(msg.Chat.ID, "Compressing..."))
-	if e != nil {
-		return e
+
+	var m tgbot.Message
+	var e error
+	if bot != nil {
+		m, e = bot.Send(tgbot.NewMessage(msg.Chat.ID, "Compressing..."))
+		if e != nil {
+			return e
+		}
+	} else {
+		Response("Compressing...", nil, nil)
 	}
+
 	err := ffmpeg.Compress(pth, false, func(part, total int64) {
-		fmt.Println(total, part)
 		text := fmt.Sprintf("%.2f%%", float64(part)/float64(total)*100)
 		if text == m.Text {
 			return
 		}
-		conf := tgbot.NewEditMessageText(m.Chat.ID, m.MessageID, text)
-		m, e = bot.Send(conf)
-		fmt.Println(e)
+		if bot != nil {
+			conf := tgbot.NewEditMessageText(m.Chat.ID, m.MessageID, text)
+			m, e = bot.Send(conf)
+			if e != nil {
+				fmt.Print(e)
+			}
+			return
+		}
+		Response(text, bot, msg)
+
 	})
 	return err
 }
@@ -143,5 +179,25 @@ func zips(bot *tgbot.BotAPI, msg *tgbot.Message) error {
 	zfile.AddFS(fs)
 	res = tgbot.NewMessage(msg.Chat.ID, "Compressed")
 	bot.Send(res)
+	return nil
+}
+
+func donwl(bot *tgbot.BotAPI, msg *tgbot.Message) error {
+	usr := GetUserFromMsg(msg)
+	url := msg.CommandArguments()
+	dl := downloader.NewDownloader(url)
+	if dl.Filename == "" {
+		dl.Filename = time.Now().String()
+	}
+	dl.Filename = path.Join(usr.Path, dl.Filename)
+	Response("Downloading", bot, msg)
+	dl.StartParallel()
+	cli := http.Client{}
+	sz, e := downloader.GetLength(&cli, url)
+	if e != nil {
+		return e
+	}
+	usr.TDownloaded += sz
+	Response("Downloaded", bot, msg)
 	return nil
 }

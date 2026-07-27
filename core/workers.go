@@ -40,3 +40,9 @@ func SaveWorker() {
 		saveMTX.Unlock()
 	}
 }
+
+func MainWorker(bot *tgbot.BotAPI) {
+	for update := range Updates {
+		go OnUpdate(bot, update)
+	}
+}

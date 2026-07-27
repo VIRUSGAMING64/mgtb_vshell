@@ -11,11 +11,12 @@ import (
 )
 
 type User struct {
-	Root   string `json:"root"`
-	Path   string `json:"path"`
-	Name   string `json:"name"`
-	Id     int64  `json:"id"`
-	Status int    `json:"status"`
+	Root        string `json:"root"`
+	Path        string `json:"path"`
+	Name        string `json:"name"`
+	Id          int64  `json:"id"`
+	Status      int    `json:"status"`
+	TDownloaded int64  `json:"downloads"`
 }
 
 var Users map[int64]*User = make(map[int64]*User)
@@ -64,10 +65,16 @@ func _back(a *User) error {
 	if a.Path == a.Root {
 		return fmt.Errorf("current dir is root")
 	}
-	pth, e := strings.CutSuffix(a.Path, path.Base(a.Path))
-	if e {
-		a.Path = pth
+
+	p, f := path.Split(a.Path)
+	fmt.Println(p, f)
+	if p == "" {
+		p = "."
+	} else {
+		p = p[:len(p)-1]
 	}
+
+	a.Path = p
 	return nil
 }
 
@@ -82,6 +89,9 @@ func (a *User) Chdir(dir string) error {
 	}
 	if dir == ".." {
 		return _back(a)
+	}
+	if ((a.Status & ADMIN) == 0) && strings.Contains(dir, "..") {
+		return fmt.Errorf("invalid path")
 	}
 	pth := path.Join(a.Path, dir)
 	fd, e := os.Open(pth)

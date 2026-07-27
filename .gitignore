@@ -3,3 +3,4 @@ tests/
 roots/
 test*
 users.json
+.vscode/
