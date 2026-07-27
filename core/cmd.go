@@ -39,7 +39,7 @@ func Cmd() {
 		up.Message.From.UserName = "offline"
 		up.Message.From.ID = 0
 		Updates <- up
-		time.Sleep(1 * time.Second)
+		time.Sleep(300 * time.Millisecond)
 	}
 }
 

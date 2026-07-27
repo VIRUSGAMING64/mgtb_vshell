@@ -4,4 +4,3 @@ roots/
 test*
 users.json
 .vscode/
-admins.conf

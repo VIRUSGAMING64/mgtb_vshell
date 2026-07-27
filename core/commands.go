@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"os"
 	"path"
+	"strings"
 	"time"
 
 	tgbot "github.com/go-telegram-bot-api/telegram-bot-api/v5"
@@ -44,12 +45,21 @@ func ls(bot *tgbot.BotAPI, msg *tgbot.Message) error {
 	}
 
 	text := usr.Path + "\n"
+	bld := strings.Builder{}
+	bld.WriteString(text)
 	for _, a := range dir {
-		text += a + "\n"
+		_, e := bld.WriteString(a + "\n")
+		if e != nil {
+			return e
+		}
 	}
 	for _, a := range fils {
-		text += a + "\n"
+		_, e := bld.WriteString(a + "\n")
+		if e != nil {
+			return e
+		}
 	}
+	text = bld.String()
 	err = Response(text, bot, msg)
 	return err
 }
@@ -69,6 +79,11 @@ func mkdir(bot *tgbot.BotAPI, msg *tgbot.Message) error {
 func cd(bot *tgbot.BotAPI, msg *tgbot.Message) error {
 	usr := GetUserFromMsg(msg)
 	arg := msg.CommandArguments()
+	if arg == "" {
+		usr.Path = usr.Root
+		text := "Directory changed to: [project]/"
+		return Response(text, bot, msg)
+	}
 	err := usr.Chdir(arg)
 	if err != nil {
 		return err
