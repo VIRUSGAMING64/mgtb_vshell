@@ -229,7 +229,7 @@ func stats(bot *tgbot.BotAPI, msg *tgbot.Message) error {
 		alloc /= 1024
 		mb = true
 	}
-	s := "----------BOT STATUS----------\n"
+	s := "---------BOT STATUS---------\n"
 	bld := strings.Builder{}
 	bld.WriteString(s)
 	bld.WriteString(fmt.Sprint("Alloc memory ", alloc))

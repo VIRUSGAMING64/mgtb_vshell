@@ -8,6 +8,7 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
 	tgbot "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
@@ -16,12 +17,14 @@ func main() {
 	go web.Start()
 	go core.Aliver()
 	go core.InitConfig()
+	time.Sleep(60 * time.Second)
 	BOT_TOKEN, exsits := os.LookupEnv("BOT_TOKEN")
 
 	if exsits == false {
 		fmt.Println("bot token not present")
 		os.Exit(1)
 	}
+
 	go func() {
 		ctx, stop := signal.NotifyContext(
 			context.Background(), syscall.SIGINT)
