@@ -15,6 +15,8 @@ const (
 	BAN   = 2
 )
 
+var Bot *tgbotapi.BotAPI
+var Offline = false
 var ROOT = "roots/"
 var SAVE_USERS = "users.json"
 var AdminsPth = "admins.conf"

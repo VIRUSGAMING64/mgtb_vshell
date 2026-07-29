@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"govshell/core"
+	"govshell/web"
 	"os"
 	"os/signal"
 	"syscall"
@@ -12,7 +13,9 @@ import (
 )
 
 func main() {
-	core.InitConfig()
+	go web.Start()
+	go core.Aliver()
+	go core.InitConfig()
 	BOT_TOKEN, exsits := os.LookupEnv("BOT_TOKEN")
 
 	if exsits == false {
@@ -30,9 +33,10 @@ func main() {
 	}()
 
 	bot, err := tgbot.NewBotAPI(BOT_TOKEN)
-
+	core.Bot = bot
 	go core.MainWorker(bot)
 	if err != nil {
+		core.Offline = true
 		fmt.Println("Starting offline")
 		core.Cmd()
 		fmt.Println(err)

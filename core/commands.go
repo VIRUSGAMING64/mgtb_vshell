@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"os"
 	"path"
+	"runtime"
 	"strings"
 	"time"
 
@@ -215,4 +216,30 @@ func donwl(bot *tgbot.BotAPI, msg *tgbot.Message) error {
 	usr.TDownloaded += sz
 	Response("Downloaded", bot, msg)
 	return nil
+}
+
+func stats(bot *tgbot.BotAPI, msg *tgbot.Message) error {
+	mem := new(runtime.MemStats)
+	ncpu := runtime.NumCPU()
+	ngor := runtime.NumGoroutine()
+	runtime.ReadMemStats(mem)
+	alloc := mem.Sys / 1024
+	mb := false
+	if alloc/1024 > 0 {
+		alloc /= 1024
+		mb = true
+	}
+	s := "----------BOT STATUS----------\n"
+	bld := strings.Builder{}
+	bld.WriteString(s)
+	bld.WriteString(fmt.Sprint("Alloc memory ", alloc))
+	if mb {
+		bld.WriteString("MB\n")
+	} else {
+		bld.WriteString("KB\n")
+	}
+	bld.WriteString(fmt.Sprintln("CPU Cores:", ncpu))
+	bld.WriteString(fmt.Sprintln("Rutines:", ngor))
+	text := bld.String()
+	return Response(text, bot, msg)
 }

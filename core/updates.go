@@ -27,9 +27,10 @@ func OnCommand(bot *tgbot.BotAPI, msg *tgbot.Message) error {
 	case "zip":
 		err = zips(bot, msg)
 	case "x265":
-		comp_queue = append(comp_queue, bot)
+		Response(fmt.Sprintf("Queue position: %d", len(msg_queue)), bot, msg)
 		msg_queue = append(msg_queue, msg)
-
+	case "stats":
+		err = stats(bot, msg)
 	case "ls":
 		err = ls(bot, msg)
 	case "cd":
