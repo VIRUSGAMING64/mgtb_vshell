@@ -8,7 +8,6 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
-	"time"
 
 	tgbot "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
@@ -17,7 +16,7 @@ func main() {
 	go web.Start()
 	go core.Aliver()
 	go core.InitConfig()
-	time.Sleep(60 * time.Second)
+	//	time.Sleep(60 * time.Second)
 	BOT_TOKEN, exsits := os.LookupEnv("BOT_TOKEN")
 
 	if exsits == false {
@@ -41,8 +40,8 @@ func main() {
 	if err != nil {
 		core.Offline = true
 		fmt.Println("Starting offline")
-		core.Cmd()
 		fmt.Println(err)
+		core.Cmd()
 		return
 	}
 

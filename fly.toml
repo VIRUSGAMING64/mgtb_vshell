@@ -1,0 +1,45 @@
+# fly.toml - configuración de la app para Fly.io
+# Docs: https://fly.io/docs/reference/configuration/
+
+app = "mgtb-vshell"
+primary_region = "gru"
+
+[build]
+
+# El bot lee el token de la variable de entorno BOT_TOKEN.
+# No lo pongas acá: definilo como secret con
+#   fly secrets set BOT_TOKEN=123456:ABC...
+[env]
+
+[http_service]
+  # web/serv.go escucha en el puerto 80 (http.ListenAndServe(":80", nil))
+  internal_port = 80
+  force_https = true
+  # El bot debe estar siempre arriba: no apagamos la máquina por inactividad.
+  auto_stop_machines = "off"
+  auto_start_machines = true
+  min_machines_running = 1
+
+  [http_service.concurrency]
+    type = "requests"
+    soft_limit = 200
+    hard_limit = 250
+
+# Health check contra el endpoint que ya expone la app.
+[[http_service.checks]]
+  interval = "30s"
+  timeout = "5s"
+  grace_period = "10s"
+  method = "GET"
+  path = "/alive"
+
+# Almacenamiento persistente para roots/ (archivos descargados y comprimidos
+# de cada usuario). Creá el volumen una sola vez con:
+#   fly volumes create mgtb_vshell_data --size 10 --region gru
+[[mounts]]
+  source = "mgtb_vshell_data"
+  destination = "/app/roots"
+
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "512mb"

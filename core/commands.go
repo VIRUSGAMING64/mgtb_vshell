@@ -199,6 +199,7 @@ func zips(bot *tgbot.BotAPI, msg *tgbot.Message) error {
 }
 
 func donwl(bot *tgbot.BotAPI, msg *tgbot.Message) error {
+
 	usr := GetUserFromMsg(msg)
 	url := msg.CommandArguments()
 	dl := downloader.NewDownloader(url)

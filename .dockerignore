@@ -1,0 +1,10 @@
+.git
+.gitignore
+.env
+app
+roots
+users.json
+tests
+.vscode
+Dockerfile
+fly.toml
